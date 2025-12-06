@@ -1,7 +1,7 @@
 import { Sequelize } from "sequelize-typescript";
 import Address from "../../@shared/domain/value-object/address";
-import InvoiceModel from "../repository/invoice.model";
-import InvoiceItemModel from "../repository/invoice-item.model";
+import { InvoiceModel } from "../repository/invoice.model";
+import { InvoiceItemModel } from "../repository/invoice-item.model";
 import InvoiceFacadeFactory from "../factory/invoice.facade.factory";
 
 describe("Invoice Facade test", () => {

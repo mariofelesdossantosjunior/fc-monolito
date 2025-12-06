@@ -7,6 +7,7 @@ export interface FindStoreCatalogFacadeOutputDto {
   name: string;
   description: string;
   salesPrice: number;
+  stock: number;
 }
 
 export interface FindAllStoreCatalogFacadeOutputDto {
