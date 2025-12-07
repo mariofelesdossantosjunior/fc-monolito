@@ -3,6 +3,9 @@ import Id from "../../@shared/domain/value-object/id.value-object";
 import Product from "../domain/product.entity";
 import { ProductModel } from "./product.model";
 import ProductRepository from "./product.repository";
+import CheckoutModel from "../../checkout/repository/checkout.model";
+import CheckoutItemModel from "../../checkout/repository/checkout-item.model";
+import { ClientModel } from "../../client-adm/repository/client.model";
 
 describe("ProductRepository test", () => {
   let sequelize: Sequelize;
@@ -15,7 +18,12 @@ describe("ProductRepository test", () => {
       sync: { force: true },
     });
 
-    await sequelize.addModels([ProductModel]);
+    await sequelize.addModels([
+      ProductModel,
+      CheckoutModel,
+      CheckoutItemModel,
+      ClientModel,
+    ]);
     await sequelize.sync();
   });
 

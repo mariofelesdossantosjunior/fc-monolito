@@ -4,10 +4,17 @@ import { sequelize } from "../../db/sequelize";
 import { ClientModel } from "../../../modules/client-adm/repository/client.model";
 import { ProductModel } from "../../../modules/product-adm/repository/product.model";
 import CheckoutModel from "../../../modules/checkout/repository/checkout.model";
+import CheckoutItemModel from "../../../modules/checkout/repository/checkout-item.model";
 
 describe("E2E test for checkout", () => {
   beforeAll(async () => {
-    sequelize.addModels([ClientModel, ProductModel, CheckoutModel]);
+    sequelize.addModels([
+      ClientModel,
+      ProductModel,
+      CheckoutModel,
+      CheckoutItemModel,
+    ]);
+
     await sequelize.sync({ force: true });
   });
 
@@ -16,7 +23,7 @@ describe("E2E test for checkout", () => {
   });
 
   it("should create checkout", async () => {
-    await request(app).post("/clients").send({
+    await ClientModel.create({
       id: "1",
       name: "Client 1",
       email: "client1@test.com",
@@ -31,37 +38,47 @@ describe("E2E test for checkout", () => {
       updatedAt: new Date(),
     });
 
-    await request(app).post("/products").send({
-      id: "1",
-      name: "Product 1",
-      description: "Desc 1",
-      purchasePrice: 10,
-      stock: 10,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    await ProductModel.bulkCreate([
+      {
+        id: "1",
+        name: "Product 1",
+        description: "Desc 1",
+        purchasePrice: 10,
+        stock: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: "2",
+        name: "Product 2",
+        description: "Desc 2",
+        purchasePrice: 20,
+        stock: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
 
-    await request(app).post("/products").send({
-      id: "2",
-      name: "Product 2",
-      description: "Desc 2",
-      purchasePrice: 20,
-      stock: 10,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    // Criação do checkout
     const response = await request(app)
       .post("/checkout")
       .send({
         clientId: "1",
-        products: [{ productId: "1" }, { productId: "2" }],
+        products: [
+          { productId: "1", quantity: 1 },
+          { productId: "2", quantity: 1 },
+        ],
       });
 
     expect(response.status).toBe(201);
     expect(response.body.id).toBeDefined();
-    expect(response.body.total).toBe(30);
     expect(response.body.products.length).toBe(2);
+
+    const checkoutDb = await CheckoutModel.findOne({
+      where: { id: response.body.id },
+      include: [{ model: CheckoutItemModel, as: "items" }],
+    });
+
+    expect(checkoutDb).not.toBeNull();
+    expect(checkoutDb!.items.length).toBe(2);
   });
 });

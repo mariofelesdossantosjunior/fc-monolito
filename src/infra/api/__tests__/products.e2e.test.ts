@@ -1,9 +1,19 @@
 import request from "supertest";
 import { app } from "../server";
 import { sequelize } from "../../db/sequelize";
+import { ClientModel } from "../../../modules/client-adm/repository/client.model";
+import { ProductModel } from "../../../modules/product-adm/repository/product.model";
+import CheckoutModel from "../../../modules/checkout/repository/checkout.model";
+import CheckoutItemModel from "../../../modules/checkout/repository/checkout-item.model";
 
 describe("E2E test for products", () => {
   beforeEach(async () => {
+    sequelize.addModels([
+      ClientModel,
+      ProductModel,
+      CheckoutModel,
+      CheckoutItemModel,
+    ]);
     await sequelize.sync({ force: true });
   });
 

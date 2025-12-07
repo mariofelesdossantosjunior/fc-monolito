@@ -1,6 +1,7 @@
 import { Sequelize } from "sequelize-typescript";
 import CheckoutRepository from "./checkout.repository";
 import CheckoutModel from "./checkout.model";
+import CheckoutItemModel from "./checkout-item.model";
 import { ProductModel } from "../../product-adm/repository/product.model";
 import { ClientModel } from "../../client-adm/repository/client.model";
 import Order from "../domain/order.entity";
@@ -20,7 +21,12 @@ describe("CheckoutRepository addOrder test", () => {
       sync: { force: true },
     });
 
-    sequelize.addModels([CheckoutModel, ProductModel, ClientModel]);
+    sequelize.addModels([
+      CheckoutModel,
+      CheckoutItemModel,
+      ProductModel,
+      ClientModel,
+    ]);
     await sequelize.sync();
   });
 
@@ -42,7 +48,7 @@ describe("CheckoutRepository addOrder test", () => {
       id: new Id("client-1"),
       name: "John Doe",
       email: "john@test.com",
-      address: address,
+      address,
     });
 
     await ClientModel.create({
@@ -75,6 +81,27 @@ describe("CheckoutRepository addOrder test", () => {
       stock: 50,
     });
 
+    await ProductModel.bulkCreate([
+      {
+        id: product1.id.id,
+        name: product1.name,
+        description: product1.description,
+        purchasePrice: product1.salesPrice,
+        stock: product1.stock,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: product2.id.id,
+        name: product2.name,
+        description: product2.description,
+        purchasePrice: product2.salesPrice,
+        stock: product2.stock,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+
     const order = new Order({
       id: new Id("checkout-1"),
       client,
@@ -84,25 +111,28 @@ describe("CheckoutRepository addOrder test", () => {
 
     const repository = new CheckoutRepository();
 
-    // Act
     await repository.addOrder(order);
 
-    // Assert
     const checkoutDb = await CheckoutModel.findOne({
       where: { id: "checkout-1" },
-      include: [ProductModel],
+      include: [
+        {
+          model: CheckoutItemModel,
+          as: "items",
+          include: [ProductModel],
+        },
+      ],
     });
 
     expect(checkoutDb).not.toBeNull();
     expect(checkoutDb!.status).toBe("pending");
     expect(checkoutDb!.clientId).toBe("client-1");
-
     expect(checkoutDb!.items.length).toBe(2);
 
-    const item1 = checkoutDb!.items.find((i) => i.id === "p1");
-    const item2 = checkoutDb!.items.find((i) => i.id === "p2");
+    const item1 = checkoutDb!.items.find((i) => i.productId === "p1");
+    const item2 = checkoutDb!.items.find((i) => i.productId === "p2");
 
-    expect(item1!.name).toBe("Product 1");
-    expect(item2!.name).toBe("Product 2");
+    expect(item1!.product.name).toBe("Product 1");
+    expect(item2!.product.name).toBe("Product 2");
   });
 });

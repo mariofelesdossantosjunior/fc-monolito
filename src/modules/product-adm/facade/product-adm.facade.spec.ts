@@ -1,6 +1,9 @@
 import { Sequelize } from "sequelize-typescript";
-import ProductAdmFacadeFactory from "../factory/facade.factory";
 import { ProductModel } from "../repository/product.model";
+import CheckoutItemModel from "../../checkout/repository/checkout-item.model";
+import ProductAdmFacadeFactory from "../factory/facade.factory";
+import CheckoutModel from "../../checkout/repository/checkout.model";
+import { ClientModel } from "../../client-adm/repository/client.model";
 
 describe("ProductAdmFacade test", () => {
   let sequelize: Sequelize;
@@ -13,7 +16,12 @@ describe("ProductAdmFacade test", () => {
       sync: { force: true },
     });
 
-    await sequelize.addModels([ProductModel]);
+    sequelize.addModels([
+      ProductModel,
+      CheckoutModel,
+      CheckoutItemModel,
+      ClientModel,
+    ]);
     await sequelize.sync();
   });
 
@@ -22,14 +30,7 @@ describe("ProductAdmFacade test", () => {
   });
 
   it("should create a product", async () => {
-    // const productRepository = new ProductRepository();
-    // const addProductUseCase = new AddProductUseCase(productRepository);
-    // const productFacade = new ProductAdmFacade({
-    //   addUseCase: addProductUseCase,
-    //   stockUseCase: undefined,
-    // });
-
-    const productFacade = ProductAdmFacadeFactory.create();
+    const facade = ProductAdmFacadeFactory.create();
 
     const input = {
       id: "1",
@@ -39,9 +40,10 @@ describe("ProductAdmFacade test", () => {
       stock: 10,
     };
 
-    await productFacade.addProduct(input);
+    await facade.addProduct(input);
 
     const product = await ProductModel.findOne({ where: { id: "1" } });
+
     expect(product).toBeDefined();
     expect(product.id).toBe(input.id);
     expect(product.name).toBe(input.name);
@@ -51,7 +53,8 @@ describe("ProductAdmFacade test", () => {
   });
 
   it("should check product stock", async () => {
-    const productFacade = ProductAdmFacadeFactory.create();
+    const facade = ProductAdmFacadeFactory.create();
+
     const input = {
       id: "1",
       name: "Product 1",
@@ -59,9 +62,10 @@ describe("ProductAdmFacade test", () => {
       purchasePrice: 10,
       stock: 10,
     };
-    await productFacade.addProduct(input);
 
-    const result = await productFacade.checkStock({ productId: "1" });
+    await facade.addProduct(input);
+
+    const result = await facade.checkStock({ productId: "1" });
 
     expect(result.productId).toBe(input.id);
     expect(result.stock).toBe(input.stock);

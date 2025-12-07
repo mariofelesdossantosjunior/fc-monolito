@@ -1,24 +1,20 @@
 import {
   Column,
-  ForeignKey,
+  HasMany,
   Model,
   PrimaryKey,
   Table,
 } from "sequelize-typescript";
-import CheckoutModel from "../../checkout/repository/checkout.model";
+import CheckoutItemModel from "../../checkout/repository/checkout-item.model";
 
 @Table({
   tableName: "products",
-  timestamps: false,
+  timestamps: true,
 })
 export class ProductModel extends Model {
   @PrimaryKey
   @Column({ allowNull: false })
   id: string;
-
-  @ForeignKey(() => CheckoutModel)
-  @Column({ allowNull: false, field: "checkout_id" })
-  checkoutId: string;
 
   @Column({ allowNull: false })
   name: string;
@@ -26,15 +22,15 @@ export class ProductModel extends Model {
   @Column({ allowNull: false })
   description: string;
 
-  @Column({ allowNull: false })
+  @Column({ allowNull: true })
   purchasePrice: number;
+
+  @Column({ allowNull: true })
+  salesPrice: number;
 
   @Column({ allowNull: false })
   stock: number;
 
-  @Column({ allowNull: false })
-  createdAt: Date;
-
-  @Column({ allowNull: false })
-  updatedAt: Date;
+  @HasMany(() => CheckoutItemModel, "product_id")
+  items: CheckoutItemModel[];
 }

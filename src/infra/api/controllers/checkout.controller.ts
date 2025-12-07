@@ -1,32 +1,20 @@
 import { Request, Response } from "express";
-import PaymentFacadeFactory from "../../../modules/payment/factory/payment.facade.factory";
-import ClientAdmFacadeFactory from "../../../modules/client-adm/factory/client-adm.facade.factory";
-import ProductAdmFacadeFactory from "../../../modules/product-adm/factory/facade.factory";
-import StoreCatalogFacadeFactory from "../../../modules/store-catalog/factory/facade.factory";
-import PlaceOrderUseCase from "../../../modules/checkout/usecase/place-order/place-order.usecase";
-import CheckoutRepository from "../../../modules/checkout/repository/checkout.repository";
+import CheckoutFacadeFactory from "../../../modules/checkout/factory/checkout.facade.factory";
 
 export async function checkout(req: Request, res: Response) {
-  const clientFacade = ClientAdmFacadeFactory.create();
-  const productFacade = ProductAdmFacadeFactory.create();
-  const storeCatalogFacade = StoreCatalogFacadeFactory.create();
-  const checkoutRepository = new CheckoutRepository();
-
-  const placeOrderUseCase = new PlaceOrderUseCase(
-    clientFacade,
-    productFacade,
-    storeCatalogFacade,
-    checkoutRepository
-  );
+  const checkoutFacade = CheckoutFacadeFactory.create();
 
   try {
-    const order = placeOrderUseCase.execute({
+    const order = await checkoutFacade.checkout({
       clientId: req.body.clientId,
-      products: req.body.products,
+      products: req.body.products.map((p: any) => ({
+        productId: p.productId,
+        quantity: p.quantity ?? 1,
+      })),
     });
 
     return res.status(201).json(order);
-  } catch (error) {
-    res.status(500).send(error);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
   }
 }

@@ -1,6 +1,8 @@
 import Order from "../domain/order.entity";
 import CheckoutGateway from "../gateway/checkout.gateway";
 import CheckoutModel from "./checkout.model";
+import CheckoutItemModel from "./checkout-item.model";
+import Id from "../../@shared/domain/value-object/id.value-object";
 
 export default class CheckoutRepository implements CheckoutGateway {
   async addOrder(order: Order): Promise<void> {
@@ -11,17 +13,10 @@ export default class CheckoutRepository implements CheckoutGateway {
         status: order.status,
         createdAt: new Date(),
         updatedAt: new Date(),
-
         items: order.products.map((product) => ({
-          id: product.id.id,
-          name: product.name,
-          description: product.description,
-          salesPrice: product.salesPrice,
-          purchasePrice: product.salesPrice ?? 0,
-          stock: product.stock ?? 0,
+          id: new Id().id,
           checkoutId: order.id.id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          productId: product.id.id,
         })),
       },
       { include: [CheckoutModel.associations.items] }

@@ -27,6 +27,7 @@ describe("ProductRepository test", () => {
       name: "Product 1",
       description: "Description 1",
       salesPrice: 100,
+      stock: 10,
     });
 
     await ProductModel.create({
@@ -34,6 +35,7 @@ describe("ProductRepository test", () => {
       name: "Product 2",
       description: "Description 2",
       salesPrice: 200,
+      stock: 20,
     });
 
     const productRepository = new ProductRepository();
@@ -56,6 +58,7 @@ describe("ProductRepository test", () => {
       name: "Product 1",
       description: "Description 1",
       salesPrice: 100,
+      stock: 10,
     });
 
     const productRepository = new ProductRepository();

@@ -7,8 +7,8 @@ import {
   PrimaryKey,
   Table,
 } from "sequelize-typescript";
-import { ProductModel } from "../../product-adm/repository/product.model";
 import { ClientModel } from "../../client-adm/repository/client.model";
+import CheckoutItemModel from "./checkout-item.model";
 
 @Table({
   tableName: "checkout",
@@ -29,6 +29,6 @@ export default class CheckoutModel extends Model {
   @BelongsTo(() => ClientModel)
   client: ClientModel;
 
-  @HasMany(() => ProductModel)
-  items: ProductModel[];
+  @HasMany(() => CheckoutItemModel, "checkout_id")
+  items: CheckoutItemModel[];
 }
